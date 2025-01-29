@@ -1,0 +1,25 @@
+server:
+  port: 9090
+
+spring:
+  security:
+    oauth2:
+      client:
+        registration:
+          keycloak:
+            client-id: spring-boot-app-client-id
+            client-secret: O8Ozjf0dlWmeIahx1rqqQiSRWJsdIiWp
+            scope: openid
+            authorization-grant-type: client_credntial
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8080/realms/FirstRealm
+            user-name-attribute: preferred_username
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8080/realms/FirstRealm
+
+logging:
+  level:
+    org:
+      springframework: trace
