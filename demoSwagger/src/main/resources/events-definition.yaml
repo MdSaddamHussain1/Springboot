@@ -1,0 +1,453 @@
+openapi: 3.0.3
+info:
+  title: Event Creation API with Schema
+  description: API to define, retrieve, and update event structure with JSON or XML schema for the payload.
+  version: 1.0.0
+
+paths:
+  /event-definition:
+    post:
+      summary: Create a new event definition with a JSON or XML schema
+      description: Defines a new event in the system, allowing users to pass in a JSON Schema or XML Schema to validate the event's payload.
+      operationId: createEventDefinitionWithSchema
+      parameters:
+        - $ref: '#/components/parameters/Request-ID'
+        - $ref: '#/components/parameters/User-ID'
+        - $ref: '#/components/parameters/Session-ID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/event-definition-details'
+      responses:
+        '201':
+          description: Event created successfully
+          headers:
+            Request-ID:
+              description: "A unique identifier for the request."
+              schema:
+                type: string
+                example: "abc123xyz"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Event definition created successfully."
+        '400':
+          description: Bad Request - Invalid event definition or schema
+          headers:
+            Request-ID:
+              description: "A unique identifier for the request."
+              schema:
+                type: string
+                example: "abc123xyz"
+        '500':
+          description: Internal Server Error - An unexpected error occurred
+          headers:
+            Request-ID:
+              description: "A unique identifier for the request."
+              schema:
+                type: string
+                example: "abc123xyz"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+
+    get:
+      summary: Retrieve all event definitions with pagination
+      description: Fetches all event definitions, allowing pagination to limit the number of results returned.
+      operationId: getAllEventDefinitions
+      parameters:
+        - in: query
+          name: limit
+          required: false
+          description: The maximum number of results to return per page.
+          schema:
+            type: integer
+            default: 10
+            minimum: 1
+            maximum: 100
+        - in: query
+          name: page
+          required: false
+          description: The page number to retrieve (starts from 1).
+          schema:
+            type: integer
+            default: 1
+            minimum: 1
+        - $ref: '#/components/parameters/Request-ID'
+        - $ref: '#/components/parameters/User-ID'
+        - $ref: '#/components/parameters/Session-ID'
+      responses:
+        '200':
+          description: List of event definitions
+          headers:
+            Request-ID:
+              description: "A unique identifier for the request."
+              schema:
+                type: string
+                example: "abc123xyz"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/event-definition-details-list'
+        '500':
+          description: Internal Server Error - An unexpected error occurred
+          headers:
+            Request-ID:
+              description: "A unique identifier for the request."
+              schema:
+                type: string
+                example: "abc123xyz"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+
+  /event-definition/{eventName}:
+    get:
+      summary: Retrieve an event definition by event name
+      description: Fetches an event definition, including the schema and other details, using the event name.
+      operationId: getEventDefinition
+      parameters:
+        - in: path
+          name: eventName
+          required: true
+          description: Name of the event to retrieve
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Request-ID'
+        - $ref: '#/components/parameters/User-ID'
+        - $ref: '#/components/parameters/Session-ID'
+      responses:
+        '200':
+          description: Event definition retrieved successfully
+          headers:
+            Request-ID:
+              description: "A unique identifier for the request."
+              schema:
+                type: string
+                example: "abc123xyz"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/event-definition-details'
+        '404':
+          description: Event definition not found for the specified event name
+          headers:
+            Request-ID:
+              description: "A unique identifier for the request."
+              schema:
+                type: string
+                example: "abc123xyz"
+        '500':
+          description: Internal Server Error - An unexpected error occurred
+          headers:
+            Request-ID:
+              description: "A unique identifier for the request."
+              schema:
+                type: string
+                example: "abc123xyz"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+    patch:
+      summary: Update an existing event definition (without changing the event name)
+      description: Partially updates an existing event definition, allowing users to modify the event's type or schema, without modifying the event name.
+      operationId: updateEventDefinition
+      parameters:
+        - in: path
+          name: eventName
+          required: true
+          description: Name of the event to update
+          schema:
+            type: string
+        - $ref: '#/components/parameters/Request-ID'
+        - $ref: '#/components/parameters/User-ID'
+        - $ref: '#/components/parameters/Session-ID'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/event-definition-details-update'
+      responses:
+        '200':
+          description: Event definition updated successfully
+          headers:
+            Request-ID:
+              description: "A unique identifier for the request."
+              schema:
+                type: string
+                example: "abc123xyz"
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Event definition updated successfully."
+        '400':
+          description: Bad Request - Invalid event definition or schema
+          headers:
+            Request-ID:
+              description: "A unique identifier for the request."
+              schema:
+                type: string
+                example: "abc123xyz"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+        '404':
+          description: Event definition not found for the specified event name
+          headers:
+            Request-ID:
+              description: "A unique identifier for the request."
+              schema:
+                type: string
+                example: "abc123xyz"
+        '500':
+          description: Internal Server Error - An unexpected error occurred
+          headers:
+            Request-ID:
+              description: "A unique identifier for the request."
+              schema:
+                type: string
+                example: "abc123xyz"
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/errors'
+
+
+components:
+  parameters:
+    Request-ID:
+      name: Request-ID
+      in: header
+      description: Unique identifier for the request, useful for tracking.
+      required: true
+      schema:
+        type: string
+        example: "f80b452a-98a5-4b8d-bde1-e515a8bcf477"
+    User-ID:
+      name: User-ID
+      in: header
+      description: The ID of the user submitting the request.
+      required: true
+      schema:
+        type: string
+        example: "user-12345"
+    Session-ID:
+      name: Session-ID
+      in: header
+      description: Unique identifier for the session, useful for tracking.
+      required: true
+      schema:
+        type: string
+        example: "f80b452a-98a5-4b8d-bde1-e515a8bcf477"
+  schemas:
+    errors:
+      required:
+        - error
+      type: object
+      properties:
+        error:
+          type: array
+          items:
+            $ref: '#/components/schemas/error-details'
+    error-details:
+      required:
+        - error
+        - status
+        - message
+      type: object
+      properties:
+        error:
+          type: string
+          description: Actual error (e.g., "Exception in thread main java.lang.NullPointerException")
+          example: "Exception in thread main java.lang.NullPointerException"
+        status:
+          type: string
+          description: Type of Error (either "VALIDATION" or "ERROR")
+          enum:
+            - VALIDATION
+            - ERROR
+          example: "VALIDATION"
+        message:
+          type: string
+          description: Error that can be shown on the Front end (e.g., "The Value Passed should be numeric")
+          example: "The Value Passed should be numeric"
+        fieldName:
+          type: string
+          description: Name of the Field which caused the error (e.g., "eventName","DLPPatterns")
+          example: "eventName"
+        code:
+          type: string
+          description: Internal error code associated with Back End (e.g., "400.1","500.1")
+          example: "400.1"
+    event-definition-details-list:
+      type: object
+      properties:
+        totalCount:
+          type: integer
+          description: Total number of event definitions available.
+          example: 100
+        page:
+          type: integer
+          description: Current page number.
+          example: 1
+        pageSize:
+          type: integer
+          description: Number of event definitions returned per page.
+          example: 10
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/event-definition-details'
+
+    event-definition-details:
+      required:
+        - eventName
+        - eventDescription
+        - eventStatus
+        - eventMethod
+        - DLPStatus
+      type: object
+      properties:
+        eventName:
+          type: string
+          description: Name of the event (e.g., "user_signup", "order_placed")
+          example: "user_signup"
+        eventDescription:
+          type: string
+          description: Decription of event (e.g., "Event for User Sign up")
+          example: "Event for User Sign up"
+        eventStatus:
+          type: string
+          description: Status of event-defintion (e.g., "ACTIVE","DISABLED")
+          enum:
+            - ACTIVE
+            - DISABLED
+          example: "ACTIVE"
+        eventMethod:
+          type: string
+          description: Type of subscription (e.g., "ASYNCH","SYNCH")
+          enum:
+            - ASYNCH
+            - SYNCH
+          example: "ASYNCH"
+        DLPStatus:
+          type: string
+          description: Status of DLP Check (e.g., "ACTIVE","DISABLED")
+          enum:
+            - ACTIVE
+            - DISABLED
+          example: "ACTIVE"
+        DLPPatterns:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: "email"
+              regex:
+                type: string
+                example: "^[\\w-]+(?:\\.[\\w-]+)*@([\\w-]+\\.)+[a-zA-Z]{2,7}$"
+        schemaFormat:
+          type: string
+          description: The format of the schema (either "json" or "xml")
+          enum:
+            - json
+            - xml
+          example: "json"
+        schema:
+          type: string
+          description: The schema definition for the event payload. This can be a JSON Schema (for JSON payload) or an XSD Schema (for XML payload).
+          example: |
+            {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "properties": {
+                "userId": { "type": "string" },
+                "userName": { "type": "string" },
+                "email": { "type": "string" }
+              },
+              "required": ["userId", "userName", "email"]
+            }
+          minLength: 0
+    event-definition-details-update:
+      required:
+        - eventDescription
+        - eventStatus
+        - eventMethod
+        - DLPStatus
+      type: object
+      properties:
+        eventDescription:
+          type: string
+          description: Decription of event (e.g., "Event for User Sign up")
+          example: "Event for User Sign up"
+        eventStatus:
+          type: string
+          description: Status of event-defintion (e.g., "ACTIVE","DISABLED")
+          enum:
+            - ACTIVE
+            - DISABLED
+          example: "ACTIVE"
+        eventMethod:
+          type: string
+          description: Type of subscription (e.g., "ASYNCH","SYNCH")
+          enum:
+            - ASYNCH
+            - SYNCH
+          example: "ASYNCH"
+        DLPStatus:
+          type: string
+          description: Status of DLP Check (e.g., "ACTIVE","DISABLED")
+          enum:
+            - ACTIVE
+            - DISABLED
+          example: "ACTIVE"
+        DLPPatterns:
+          type: array
+          items:
+            type: object
+            properties:
+              name:
+                type: string
+                example: "email"
+              regex:
+                type: string
+                example: "^[\\w-]+(?:\\.[\\w-]+)*@([\\w-]+\\.)+[a-zA-Z]{2,7}$"
+        schemaFormat:
+          type: string
+          description: The format of the schema (either "json" or "xml")
+          enum:
+            - json
+            - xml
+          example: "json"
+        schema:
+          type: string
+          description: The schema definition for the event payload. This can be a JSON Schema (for JSON payload) or an XSD Schema (for XML payload).
+          example: |
+            {
+              "$schema": "http://json-schema.org/draft-07/schema#",
+              "type": "object",
+              "properties": {
+                "userId": { "type": "string" },
+                "userName": { "type": "string" },
+                "email": { "type": "string" }
+              },
+              "required": ["userId", "userName", "email"]
+            }
+          minLength: 0
